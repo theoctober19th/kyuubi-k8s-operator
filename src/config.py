@@ -26,7 +26,7 @@ class KyuubiServerConfig(WithLogging):
     @property
     def _k8s_conf(self) -> dict[str, str]:
         return {
-            "spark.master": "k8s://https://192.168.10.120:16443",
+            "spark.master": "k8s://https://192.168.1.72:16443",
             "spark.kubernetes.container.image": "ghcr.io/canonical/charmed-spark:3.4-22.04_edge",
             "spark.kubernetes.authenticate.driver.serviceAccountName": "spark",
             "spark.kubernetes.namespace": "spark",
