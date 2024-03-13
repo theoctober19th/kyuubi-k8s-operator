@@ -7,7 +7,8 @@ class KyuubiServer(WithLogging):
     KYUUBI_WORKDIR = "/opt/kyuubi"
     KYUUBI_SERVICE = "kyuubi"
     CONTAINER_LAYER = "kyuubi"
-    SPARK_PROPERTIES = f"/etc/spark8t/conf/spark-defaults.conf"
+    SPARK_PROPERTIES = "/etc/spark8t/conf/spark-defaults.conf"
+    JDBC_PORT = 10009
 
     def __init__(self, container: Container, user: User = User()):
         self.container = container
@@ -19,11 +20,8 @@ class KyuubiServer(WithLogging):
         return ContainerFile(self.container, daemon_user, self.SPARK_PROPERTIES, mode)
     
     def get_jdbc_endpoint(self) -> str:
-        # TODO: construct this hostname from k8s hostname?
         hostname = "kyuubi-0.kyuubi-endpoints.kyuubi.svc.cluster.local"
-        port = 10009
-        return f"jdbc:hive2://{hostname}:{port}/"
-        # kyuubi_logs_file = ContainerFile(self.container, )
+        return f"jdbc:hive2://{hostname}:{self.JDBC_PORT}/"
     
     @property
     def _kyuubi_server_layer(self):
@@ -59,7 +57,7 @@ class KyuubiServer(WithLogging):
     def stop(self):
         """Execute business-logic for stopping the workload."""
         self.logger.info("Stopping kyuubi pebble service...")
-        self.container.stop(self.HISTORY_SERVER_SERVICE)
+        self.container.stop(self.KYUUBI_SERVICE)
 
     def ready(self) -> bool:
         """Check whether the service is ready to be used."""
@@ -67,5 +65,5 @@ class KyuubiServer(WithLogging):
 
     def health(self) -> bool:
         """Return the health of the service."""
-        return self.container.get_service(self.HISTORY_SERVER_SERVICE).is_running()
+        return self.container.get_service(self.KYUUBI_SERVICE).is_running()
         # We could use pebble health checks here
